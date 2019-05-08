@@ -21,6 +21,23 @@ def get_vilnius_rental_data():
     print(f"\n done {df.shape[0]} entries found")
 
 
+def get_vilnius_flat_sale_data():
+    """
+    Reads all rent adds and saves as .csv file
+    """
+    df = read_all_pages(rent=False)
+
+    # drop duplicates
+    df = df.drop_duplicates()
+
+    fname = "Vilnius_BUY_" + datetime.datetime.now().strftime("%Y-%m-%d_%H_%M") + ".csv"
+
+    df.to_csv(fname, encoding='utf-8')
+
+    print(f"\n done {df.shape[0]} entries found")
+
+
+
 def check_if_add(info):
     """
     Input:
@@ -107,8 +124,14 @@ def get_no_of_pages(soup):
     return int(soup.find("div", {"class": "pagination"}).findAll("a")[-2].text)
 
 
-def read_all_pages():
-    url = "https://en.aruodas.lt/butu-nuoma/vilniuje/?FOrder=AddDate"
+def read_all_pages(rent=True):
+    if rent:
+        url = "https://en.aruodas.lt/butu-nuoma/vilniuje/?FOrder=AddDate"
+        _url = "https://en.aruodas.lt/butu-nuoma/vilniuje/puslapis/"
+    else:
+        url = "https://en.aruodas.lt/butai/vilniuje/?FOrder=AddDate"
+        _url = "https://en.aruodas.lt/butai/vilniuje/puslapis/"
+
     page = requests.get(url)
     soup = BeautifulSoup(page.content, 'html.parser')
     no_pages = get_no_of_pages(soup)+1
@@ -119,7 +142,7 @@ def read_all_pages():
 
     for idx in range(2, no_pages):
 
-        url = "https://en.aruodas.lt/butu-nuoma/vilniuje/puslapis/"+str(idx)+"/?FOrder=AddDate"
+        url = _url + str(idx) + "/?FOrder=AddDate"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
         _ = read_rent_page(soup)
